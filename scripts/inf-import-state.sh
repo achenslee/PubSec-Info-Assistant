@@ -178,7 +178,7 @@ if [ $TF_VAR_useExistingAOAIService = "false" ]; then
     import_resource_if_needed $module_path "$resourceId$providers"
 
     if [ -z "$TF_VAR_chatGptDeploymentName" ]; then
-        model_name="gpt-35-turbo-16k"
+        model_name="gpt-4o"
     else
         model_name=$TF_VAR_chatGptDeploymentName
     fi

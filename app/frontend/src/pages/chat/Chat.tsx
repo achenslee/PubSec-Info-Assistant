@@ -5,6 +5,10 @@ import { useRef, useState, useEffect } from "react";
 import { Checkbox, Panel, DefaultButton, TextField, SpinButton, Separator, Toggle, Label } from "@fluentui/react";
 import Switch from 'react-switch';
 import { GlobeFilled, BuildingMultipleFilled, AddFilled, ChatSparkleFilled } from "@fluentui/react-icons";
+// import UsaceCastle from 'app/frontend/src/assets/United_States_Army_Corps_of_Engineers_logo.svg';
+import UsaceCastle from './United_States_Army_Corps_of_Engineers_logo.svg';
+
+
 import { ITag } from '@fluentui/react/lib/Pickers';
 
 import styles from "./Chat.module.css";
@@ -19,6 +23,10 @@ import { UserChatMessage } from "../../components/UserChatMessage";
 import { AnalysisPanel, AnalysisPanelTabs } from "../../components/AnalysisPanel";
 import { SettingsButton } from "../../components/SettingsButton";
 import { InfoButton } from "../../components/InfoButton";
+
+// Added 11/19
+import { DisastersButton } from "../../components/DisastersButton";
+
 import { ClearChatButton } from "../../components/ClearChatButton";
 import { ResponseLengthButtonGroup } from "../../components/ResponseLengthButtonGroup";
 import { ResponseTempButtonGroup } from "../../components/ResponseTempButtonGroup";
@@ -26,10 +34,19 @@ import { ChatModeButtonGroup } from "../../components/ChatModeButtonGroup";
 import { InfoContent } from "../../components/InfoContent/InfoContent";
 import { FolderPicker } from "../../components/FolderPicker";
 import { TagPickerInline } from "../../components/TagPicker";
+
+// Added 11/19
+import { DisastersPanel } from '../../components/DisastersPanel'; // Adjust the path
+
 import React from "react";
+
+// Added 11/19
+let currentSelectedDisaster = '';
 
 const Chat = () => {
     const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+    // Added 11/19
+    const [isDisastersPanelOpen, setIsDisastersPanelOpen] = useState(false);
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
     const [retrieveCount, setRetrieveCount] = useState<number>(5);
     const [useSuggestFollowupQuestions, setUseSuggestFollowupQuestions] = useState<boolean>(false);
@@ -137,7 +154,7 @@ const Chat = () => {
             const controller = new AbortController();
             setAbortController(controller);
             const signal = controller.signal;
-            const result = await chatApi(request, signal);
+            const result = await chatApi(request, signal, currentSelectedDisaster);
             if (!result.body) {
                 throw Error("No response body");
             }
@@ -340,10 +357,12 @@ const Chat = () => {
         <div className={styles.container}>
             <div className={styles.subHeader}>
                 <ChatModeButtonGroup className="" defaultValue={activeChatMode} onClick={onChatModeChange} featureFlags={featureFlags} /> 
+                <h2>{currentSelectedDisaster!=''?currentSelectedDisaster:'Awaiting Selection'}</h2>
                 <div className={styles.commandsContainer}>
                     <ClearChatButton className={styles.commandButton} onClick={clearChat} disabled={!lastQuestionRef.current || isLoading} />
                     <SettingsButton className={styles.commandButton} onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)} />
                     <InfoButton className={styles.commandButton} onClick={() => setIsInfoPanelOpen(!isInfoPanelOpen)} />
+                    <DisastersButton className={styles.commandButton} onClick={() => setIsDisastersPanelOpen(!isDisastersPanelOpen)} />
                 </div>
             </div>
             <div className={styles.chatRoot}>
@@ -353,7 +372,7 @@ const Chat = () => {
                             {activeChatMode == ChatMode.WorkOnly ? 
                                 <div>
                                     <div className={styles.chatEmptyStateHeader}> 
-                                        <BuildingMultipleFilled fontSize={"100px"} primaryFill={"rgba(27, 74, 239, 1)"} aria-hidden="true" aria-label="Chat with your Work Data logo" />
+                                        <img src={UsaceCastle} alt="Chat with your Work Data logo" aria-hidden="true" style={{ width: "100px", height: "100px" }} />
                                         </div>
                                     <h1 className={styles.chatEmptyStateTitle}>Chat with your work data</h1>
                                 </div>
@@ -430,7 +449,7 @@ const Chat = () => {
                         {activeChatMode == ChatMode.WorkPlusWeb && (
                             <div className={styles.chatInputWarningMessage}> 
                                 {defaultApproach == Approaches.ReadRetrieveRead && 
-                                    <div>Questions will be answered by default from Work <BuildingMultipleFilled fontSize={"20px"} primaryFill={"rgba(27, 74, 239, 1)"} aria-hidden="true" aria-label="Work Data" /></div>}
+                                    <div>Questions will be answered by default from Work <img src={UsaceCastle} alt="Chat with your Work Data logo" aria-hidden="true" style={{ width: "100px", height: "100px" }} /></div>}
                                 {defaultApproach == Approaches.ChatWebRetrieveRead && 
                                     <div>Questions will be answered by default from Web <GlobeFilled fontSize={"20px"} primaryFill={"rgba(24, 141, 69, 1)"} aria-hidden="true" aria-label="Web Data" /></div>
                                 }
@@ -513,6 +532,17 @@ const Chat = () => {
                     }
                 </Panel>
 
+                <DisastersPanel
+                isOpen={isDisastersPanelOpen}
+                onDismiss={(selectedDisaster) => {
+                    setIsDisastersPanelOpen(false); 
+                    console.log("Selected: " + selectedDisaster);
+                    currentSelectedDisaster = selectedDisaster;
+                    // generateContext(currentSelectedDisaster);
+                }}
+                />
+
+
                 <Panel
                     headerText="Information"
                     isOpen={isInfoPanelOpen}
@@ -531,3 +561,5 @@ const Chat = () => {
 };
 
 export default Chat;
+
+

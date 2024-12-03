@@ -44,7 +44,7 @@ output "RESOURCE_GROUP_NAME" {
 }
 
 output "AZURE_OPENAI_CHAT_GPT_DEPLOYMENT" {
-  value = var.chatGptDeploymentName != "" ? var.chatGptDeploymentName : var.chatGptModelName != "" ? var.chatGptModelName : "gpt-35-turbo-16k"
+  value = var.chatGptDeploymentName != "" ? var.chatGptDeploymentName : var.chatGptModelName != "" ? var.chatGptModelName : "gpt-4o"
 }
 
 output "AZURE_OPENAI_RESOURCE_GROUP" {

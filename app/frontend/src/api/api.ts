@@ -19,7 +19,7 @@ import { ChatResponse,
     FetchCitationFileResponse,
     } from "./models";
 
-export async function chatApi(options: ChatRequest, signal: AbortSignal): Promise<Response> {
+export async function chatApi(options: ChatRequest, signal: AbortSignal, currentSelectedDisaster: string): Promise<Response> {
     const response = await fetch("/chat", {
         method: "POST",
         headers: {
@@ -48,7 +48,8 @@ export async function chatApi(options: ChatRequest, signal: AbortSignal): Promis
                 selected_tags: options.overrides?.selectedTags
             },
             citation_lookup: options.citation_lookup,
-            thought_chain: options.thought_chain
+            thought_chain: options.thought_chain,
+            selectedDisaster: currentSelectedDisaster
         }),
         signal: signal
     });
@@ -488,3 +489,23 @@ export async function fetchCitationFile(filePath: string) : Promise<FetchCitatio
     const fileResponse : FetchCitationFileResponse = {file_blob : await response.blob()};
     return fileResponse;
 }
+
+export const fetchAzureFunctionResponse = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_AZURE_FUNCTION_URL}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.REACT_APP_AUTH_TOKEN}`, // assuming you're using a Bearer token
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching from Azure Function:", error);
+      throw error;
+    }
+  }

@@ -30,6 +30,17 @@ azure_blob_content_storage_container = os.environ[
 azure_authority_host = os.environ["AZURE_OPENAI_AUTHORITY_HOST"]
 local_debug = os.environ.get("LOCAL_DEBUG", False)
 
+# OpenAI Endpoint and Key
+azure_openai_key = os.environ["AZURE_OPENAI_SERVICE_KEY"]
+azure_openai_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
+azure_openai_model = os.environ["AZURE_OPENAI_MODEL"]
+azure_openai_deployment_id = os.environ["AZURE_OPENAI_DEPLOYMENT_ID"]
+azure_openai_api_version = os.environ["AZURE_OPENAI_API_VERSION"]
+prompt = os.environ["GPT4O_PROMPT"]
+system_message = os.environ["GPT4O_SYSTEM_MESSAGE"]
+aoai_headers = {"api-key": azure_openai_key}
+
+
 # Cosmos DB
 cosmosdb_url = os.environ["COSMOSDB_URL"]
 cosmosdb_log_database_name = os.environ["COSMOSDB_LOG_DATABASE_NAME"]
@@ -147,6 +158,48 @@ def translate_text(text, target_language):
     else:
         raise Exception(response.json())
 
+# funtion to submit image to GPT4o
+def submit_to_gpt4o(img_sas, prompt, system_message):
+    aoai_json = {
+    "messages": [
+        {
+            "role": "system",
+            "content": f'{system_message}'},
+        {
+            "role": "user",
+            "content": [
+	            {
+	                "type": "text",
+	                "text": f"{prompt}"
+	            },
+	            {
+	                "type": "image_url",
+	                "image_url": {
+                        "url":f"{img_sas}" 
+                    }
+                }
+           ] 
+        }
+    ],
+            "max_tokens": 100, 
+            "stream": False
+        }
+
+    logging.info(f'{azure_openai_endpoint}/openai/deployments/{azure_openai_deployment_id}/completions?api-version={azure_openai_api_version}')
+    
+    response = requests.post(f'{azure_openai_endpoint}/openai/deployments/{azure_openai_deployment_id}/completions?api-version={azure_openai_api_version}', headers=aoai_headers, json=aoai_json)
+
+    logging.info(response)
+
+    if response.status_code == 200:
+        return response.json()
+
+#Function to get model response
+def process_gpt4o_response(json_response):
+    logging.info(json_response)
+    text_resp = json_response['choices'][0]['message']['content']
+    return text_resp
+
 
 def main(msg: func.QueueMessage) -> None:
     """This function is triggered by a message in the image-enrichment-queue.
@@ -178,6 +231,11 @@ def main(msg: func.QueueMessage) -> None:
             blob_path)
         path = blob_path.split("/", 1)[1]
 
+        #Added 11/19
+        blob_path_plus_sas = utilities.get_blob_and_sas(blob_path)
+        logging.info(blob_path_plus_sas)
+
+
         blob_service_client = BlobServiceClient(account_url=azure_blob_storage_endpoint,
                                                     credential=azure_credential)
         blob_client = blob_service_client.get_blob_client(container=azure_blob_drop_storage_container,
@@ -193,6 +251,18 @@ def main(msg: func.QueueMessage) -> None:
             text_image_summary = ""
             index_content = ""
             complete_ocr_text = None
+
+            ## submit image to gpt-4o, get response, add to index ##
+            # prompt = os.environ["GPT4O_PROMPT"]
+
+            gpt4o_result = submit_to_gpt4o(blob_path_plus_sas, prompt)
+            processed_gpt4o_response = process_gpt4o_response(gpt4o_result)
+
+            logging.info(process_gpt4o_response)
+
+            text_image_summary += f"{file_name} GPT-4o Response: {processed_gpt4o_response}\n"
+            index_content += f"{file_name} GPT-4o Response: {processed_gpt4o_response}\n"
+            logging.info(text_image_summary)
 
             if GPU_REGION:
                 if result["captionResult"] is not None:

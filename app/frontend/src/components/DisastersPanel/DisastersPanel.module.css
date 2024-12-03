@@ -1,0 +1,29 @@
+/* DisastersPanel.module.css */
+
+.disastersTable {
+    margin: 20px 0;
+}
+
+.disastersTable table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.disastersTable th, .disastersTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.disastersTable th {
+    background-color: #f4f4f4;
+    text-align: left;
+}
+
+.disastersTable tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+.disasterDetails {
+    padding: 20px;
+}

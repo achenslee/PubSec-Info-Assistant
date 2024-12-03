@@ -209,12 +209,12 @@ variable "openAiSkuName" {
 
 variable "chatGptDeploymentName" {
   type    = string
-  default = "gpt-35-turbo-16k"
+  default = "gpt-4o"
 }
 
 variable "chatGptModelName" {
   type    = string
-  default = "gpt-35-turbo-16k"
+  default = "gpt-4o"
 }
 
 variable "chatGptModelSkuName" {
@@ -225,7 +225,7 @@ variable "chatGptModelSkuName" {
 
 variable "chatGptModelVersion" {
   type    = string
-  default = "0613"
+  default = "2024-05-13"
 }
 
 variable "chatGptDeploymentCapacity" {
