@@ -30,13 +30,13 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 #     process_agent_response,
 #     stream_agent_responses
 # )
-from approaches.tabulardataassistant import (
-    refreshagent,
-    save_df,
-    process_agent_response as td_agent_response,
-    process_agent_scratch_pad as td_agent_scratch_pad,
-    get_images_in_temp
-)
+# from approaches.tabulardataassistant import (
+#     refreshagent,
+#     save_df,
+#     process_agent_response as td_agent_response,
+#     process_agent_scratch_pad as td_agent_scratch_pad,
+#     get_images_in_temp
+# )
 from shared_code.status_log import State, StatusClassification, StatusLog
 from azure.cosmos import CosmosClient
 
