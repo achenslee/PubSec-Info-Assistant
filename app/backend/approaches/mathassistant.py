@@ -6,9 +6,12 @@
 import os
 import warnings
 from dotenv import load_dotenv
+from typing import ClassVar
+
 from langchain_openai import AzureChatOpenAI
-from langchain.agents import initialize_agent, load_tools, AgentType
+from langchain.agents import initialize_agent, AgentType
 from langchain.prompts import ChatPromptTemplate
+from langchain_community.agent_toolkits.load_tools import load_tools
 from azure.identity import ManagedIdentityCredential, AzureAuthorityHosts, DefaultAzureCredential, get_bearer_token_provider
 
 warnings.filterwarnings('ignore')
@@ -40,6 +43,8 @@ model = AzureChatOpenAI(
 #1. Tool to calculate pythagorean theorem
 
 from langchain.tools import BaseTool
+from pydantic import BaseModel
+from langchain.chains import LLMMathChain
 from typing import Optional
 from math import sqrt, cos, sin
 from typing import Union
@@ -50,9 +55,18 @@ desc = (
     "['adjacent_side', 'opposite_side', 'angle']."
 )
 
+# Define the BaseCache to make the tool compatible with the Langchain
+class BaseCache(BaseModel):
+    pass
+class Callbacks(BaseModel):
+    pass
+
+# Call model_rebuild for LLMMathChain
+LLMMathChain.model_rebuild()
+
 class PythagorasTool(BaseTool):
-    name = "Hypotenuse calculator"
-    description = desc
+    name: ClassVar[str] = "Hypotenuse calculator"
+    description: ClassVar[str] = desc
     
     def _run(
         self,
@@ -73,7 +87,6 @@ class PythagorasTool(BaseTool):
     def _arun(self, query: str):
         raise NotImplementedError("This tool does not support async")
 
-tools = [PythagorasTool()]
 
 #________________________________________
 
@@ -83,8 +96,8 @@ from math import pi
   
 
 class CircumferenceTool(BaseTool):
-    name = "Circumference calculator"
-    description = "use this tool when you need to calculate a circumference using the radius of a circle"
+    name: ClassVar[str] = "Circumference calculator"
+    description: ClassVar[str] = "use this tool when you need to calculate a circumference using the radius of a circle"
 
     def _run(self, radius: Union[int, float]):
         return float(radius)*2.0*pi
@@ -93,11 +106,12 @@ class CircumferenceTool(BaseTool):
         raise NotImplementedError("This tool does not support async")
     
 
-tools = [CircumferenceTool()]
-
-#add math module from Lanhgchain
-
-tools = load_tools(["llm-math","wikipedia"],  llm=model)
+# Examples of built-in tools
+llm_math_tool = load_tools(["llm-math"], llm=model)
+llm_wiki_tool = load_tools(["wikipedia"], llm=model)
+# Examples of custom tools
+llm_pythag_tool = [PythagorasTool()]
+llm_circumference_tool = [CircumferenceTool()]
 
 
 PREFIX = """Act as a math tutor that helps students solve a wide array of mathematical challenges, including arithmetic problems, algebraic equations, geometric proofs, calculus, and statistical analysis, as well as word problems.
@@ -107,11 +121,11 @@ If you cannot find a solution through your tools, then offer explanation or meth
 In handling math queries, try using your tools initially. If no solution is found, then attempt to solve the problem on your own.
 """
 
-
-# # Initialize the agent
+# Initialize the agent with a single input tool
+# You can choose which of the tools to use or create separate agents for different tools
 zero_shot_agent_math = initialize_agent(
     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        tools=tools,
+        tools=llm_math_tool,
     llm=model,
     verbose=True,
     max_iterations=10,
@@ -125,7 +139,7 @@ zero_shot_agent_math = initialize_agent(
 async def stream_agent_responses(question):
     zero_shot_agent_math = initialize_agent(
         agent="zero-shot-react-description",
-        tools=tools,
+        tools=llm_math_tool,
         llm=model,
         verbose=True,
         max_iterations=10,
