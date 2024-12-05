@@ -82,9 +82,8 @@
 // };
 
 import React, { useEffect, useState } from 'react';
-// import { useEffect, useState } from 'react';
 import { Dialog, Label, Spinner, SpinnerSize, DialogType, IconButton } from '@fluentui/react';
-// import { fetchAzureFunctionResponse } from '../../api'; // Adjust the path to your API file
+import { fetchAzureFunctionResponse } from '../../api'; // Adjust the path to your API file
 import styles from '../../pages/chat/Chat.module.css';
  
 interface Disaster {
@@ -99,14 +98,14 @@ const dialogContentProps = {
     type: DialogType.largeHeader,
     title: "Choose a disaster to investigate",
 };
- 
+
 const dialogStyles = {
     main: {
         maxWidth: '600px !important',
         minWidth: '600px !important',
     }
 };
- 
+
 // Mapping of state codes to full state names
 const stateCodeToName: { [key: string]: string } = {
     'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
@@ -120,44 +119,44 @@ const stateCodeToName: { [key: string]: string } = {
     'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
     'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
 };
- 
+
 export const DisastersPanel = ({ isOpen, onDismiss }: { isOpen: boolean, onDismiss: (selectedDisaster: string) => void }) => {
     const [disasters, setDisasters] = useState<Disaster[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
- 
+
     useEffect(() => {
         // Function to fetch disaster data from the FEMA API
         const fetchDisasters = async () => {
             // Set loading state to true and clear any previous errors
             setIsLoading(true);
             setError(null);
-   
+    
             try {
                 // URL for the FEMA Disaster Declarations Summaries API
                 const url = "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries";
-   
+    
                 // Calculate the date 30 days ago to filter recent disasters
                 const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-   
+    
                 // Create URL parameters for the API request
                 const params = new URLSearchParams({
                     "$orderby": "declarationDate desc", // Order by declaration date in descending order
                     "$filter": `declarationDate ge ${thirtyDaysAgo}`, // Filter disasters declared in the last 30 days
                     "$top": "30" // Limit the number of results to 30
                 });
-   
+    
                 // Fetch the disaster data from the FEMA API
                 const response = await fetch(`${url}?${params}`);
-   
+    
                 // Check if the response was successful
                 if (!response.ok) {
                     throw new Error('Failed to fetch disaster data from FEMA API');
                 }
-   
+    
                 // Parse the response data as JSON
                 const data = await response.json();
-   
+    
                 // Format the disaster data for display
                 const formattedData = data.DisasterDeclarationsSummaries.map((disaster: any) => ({
                     name: disaster.declarationTitle, // Title of the disaster declaration
@@ -166,7 +165,7 @@ export const DisastersPanel = ({ isOpen, onDismiss }: { isOpen: boolean, onDismi
                     area: disaster.designatedArea, // Designated area of the disaster
                     declarationDate: new Date(disaster.declarationDate).toLocaleDateString() // Declaration date in local format
                 }));
-   
+    
                 // Update the state with the formatted disaster data
                 setDisasters(formattedData);
             } catch (error) {
@@ -178,12 +177,12 @@ export const DisastersPanel = ({ isOpen, onDismiss }: { isOpen: boolean, onDismi
                 setIsLoading(false);
             }
         };
-   
+    
         // Only fetch disasters when the component is open
         if (isOpen) {
             fetchDisasters();
         }
-   
+    
         if (isOpen) {
             fetchDisasters();
         }
