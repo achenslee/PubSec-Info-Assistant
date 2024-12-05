@@ -25,11 +25,11 @@ from azure.identity import ManagedIdentityCredential, AzureAuthorityHosts, Defau
 from azure.mgmt.cognitiveservices import CognitiveServicesManagementClient
 from azure.search.documents import SearchClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
-from approaches.mathassistant import(
-    generate_response,
-    process_agent_response,
-    stream_agent_responses
-)
+# from approaches.mathassistant import(
+#     generate_response,
+#     process_agent_response,
+#     stream_agent_responses
+# )
 from approaches.tabulardataassistant import (
     refreshagent,
     save_df,
