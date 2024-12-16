@@ -255,7 +255,7 @@ def main(msg: func.QueueMessage) -> None:
             ## submit image to gpt-4o, get response, add to index ##
             prompt = os.environ["GPT4O_PROMPT"]
 
-            gpt4o_result = submit_to_gpt4o(blob_path_plus_sas, prompt)
+            gpt4o_result = submit_to_gpt4o(blob_path_plus_sas, prompt, system_message)
             processed_gpt4o_response = process_gpt4o_response(gpt4o_result)
 
             logging.info(process_gpt4o_response)
